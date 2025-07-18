@@ -30,16 +30,10 @@ export const api = createApi({
   keepUnusedDataFor: CACHE_LIFETIME,
   endpoints: (builder) => ({
     // Customer endpoints
-    getCustomers: builder.query<PagedDataResult<Customer>, PaginationParams>({
-      query: (params = {}) => ({
-        url: '/api/Customer',
-        params: {
-          page: params.page,
-          pageSize: params.pageSize,
-        },
-      }),
-      transformResponse: (response: ApiResponse<PagedDataResult<Customer>>) => response.data,
-      providesTags: (result) => providesList(result?.items, 'Customer'),
+    getCustomers: builder.query<Customer[], void>({
+      query: () => '/api/Customer',
+      transformResponse: (response: ApiResponse<Customer[]>) => response.data,
+      providesTags: (result) => providesList(result, 'Customer'),
     }),
     getCustomer: builder.query<Customer, number>({
       query: (id) => `/api/Customer/${id}`,

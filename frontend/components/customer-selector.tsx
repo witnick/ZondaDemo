@@ -13,7 +13,7 @@ export function CustomerSelector() {
     const router = useRouter();
     const dispatch = useDispatch();
     const selectedCustomer = useSelector(selectSelectedCustomerId);
-    const { data: customers, isLoading } = useGetCustomersQuery();
+    const { data: customers, isLoading } = useGetCustomersQuery({});
 
     // Convert customers to select options
     const customerOptions: SelectOption[] = customers?.map(customer => ({
@@ -26,19 +26,13 @@ export function CustomerSelector() {
         if (customers?.length && !selectedCustomer) {
             const firstCustomerId = customers[0].id.toString();
             dispatch(setSelectedCustomer(firstCustomerId));
-
-            // If on customer info page, update the URL
-            if (pathname.startsWith('/customer-info')) {
-                router.push(`/customer-info?customerId=${firstCustomerId}`, { scroll: false });
-            }
+            router.push('/customer-info');
         }
-    }, [customers, selectedCustomer, dispatch, pathname, router]);
+    }, [customers, selectedCustomer, dispatch, router]);
 
     const handleCustomerChange = (customerId: string) => {
         dispatch(setSelectedCustomer(customerId));
-        if (pathname.startsWith('/customer-info')) {
-            router.push(`/customer-info?customerId=${customerId}`, { scroll: false });
-        }
+        router.push('/customer-info');
     };
 
     return (
