@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZondaDemo.API", "ZondaDemo.API\ZondaDemo.API.csproj", "{DC796B0A-A968-44DA-ACC5-8E4D384776D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZondaDemo.Application", "ZondaDemo.Application\ZondaDemo.Application.csproj", "{82752421-BF12-47DC-873F-F26BC09CF573}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZondaDemo.Infrastructure", "ZondaDemo.Infrastructure\ZondaDemo.Infrastructure.csproj", "{93C51B7E-AB1B-4BDD-B587-D63541C18BE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZondaDemo.Core", "ZondaDemo.Core\ZondaDemo.Core.csproj", "{2C2A89CA-0A7B-4808-B32D-C791FD12534C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{DC796B0A-A968-44DA-ACC5-8E4D384776D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC796B0A-A968-44DA-ACC5-8E4D384776D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC796B0A-A968-44DA-ACC5-8E4D384776D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82752421-BF12-47DC-873F-F26BC09CF573}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82752421-BF12-47DC-873F-F26BC09CF573}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82752421-BF12-47DC-873F-F26BC09CF573}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82752421-BF12-47DC-873F-F26BC09CF573}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93C51B7E-AB1B-4BDD-B587-D63541C18BE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93C51B7E-AB1B-4BDD-B587-D63541C18BE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93C51B7E-AB1B-4BDD-B587-D63541C18BE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93C51B7E-AB1B-4BDD-B587-D63541C18BE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C2A89CA-0A7B-4808-B32D-C791FD12534C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C2A89CA-0A7B-4808-B32D-C791FD12534C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C2A89CA-0A7B-4808-B32D-C791FD12534C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C2A89CA-0A7B-4808-B32D-C791FD12534C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

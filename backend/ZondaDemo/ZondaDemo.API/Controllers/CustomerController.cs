@@ -1,182 +1,107 @@
 using Microsoft.AspNetCore.Mvc;
-using ZondaDemo.API;
-using System.Collections.Concurrent;
+using ZondaDemo.Application.Common.Models;
+using ZondaDemo.Application.Customers.GetCustomerById;
+using ZondaDemo.Application.Customers.GetCustomerList;
+using ZondaDemo.Application.Customers.UpdateCustomer;
+using ZondaDemo.Application.Customers.Commands.UpdateCustomerDetail;
+using ZondaDemo.Application.Customers.Commands.AddProductToCustomer;
+using ZondaDemo.Application.Customers.Commands.RemoveProductFromCustomer;
 
-namespace ZondaDemo.API.Controllers
+namespace ZondaDemo.API.Controllers;
+
+public class CustomerController : BaseApiController
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class CustomerController : ControllerBase
+    /// <summary>
+    /// Gets a list of all customers
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(Response<List<CustomerDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetCustomers()
     {
-        private static readonly ConcurrentDictionary<int, Customer> Customers = new();
-        private static int _nextId = 1;
+        var response = await Mediator.Send(new GetCustomerListRequest());
+        return HandleResponse(response);
+    }
 
-        // Mock data initialization
-        static CustomerController()
-        {
-            Customers.Clear();
-            Customers[1] = new Customer
-            {
-                Id = 1,
-                Name = "Alice Smith",
-                Email = "alice@example.com",
-                Detail = new CustomerDetail
-                {
-                    Id = 1,
-                    Address = "123 Main St",
-                    Phone = "555-1234",
-                    Notes = "VIP customer"
-                },
-                ProductIds = new List<int> { 1, 2 }
-            };
-            Customers[2] = new Customer
-            {
-                Id = 2,
-                Name = "Bob Johnson",
-                Email = "bob@example.com",
-                Detail = new CustomerDetail
-                {
-                    Id = 2,
-                    Address = "456 Oak Ave",
-                    Phone = "555-5678",
-                    Notes = "Prefers email contact"
-                },
-                ProductIds = new List<int> { 3 }
-            };
-            Customers[3] = new Customer
-			{
-				Id = 3,
-				Name = "John Doe",
-				Email = "john@example.com",
-				Detail = new CustomerDetail
-				{
-					Id = 2,
-					Address = "789 Cedar Ave",
-					Phone = "123-5678",
-					Notes = "Potential lead"
-				},
-				ProductIds = new List<int> { 4 }
-			};
-			_nextId = 3;
-        }
+    /// <summary>
+    /// Gets a customer by ID
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(Response<CustomerDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetCustomer(int id)
+    {
+        var response = await Mediator.Send(new GetCustomerByIdRequest(id));
+        return HandleResponse(response);
+    }
 
-        [HttpGet]
-        public IActionResult GetAll([FromQuery] bool includeProducts = false)
+    /// <summary>
+    /// Updates a customer
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(Response<CustomerDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateCustomer(int id, UpdateCustomerRequest request)
+    {
+        if (id != request.Id)
         {
-            var customers = Customers.Values.ToList();
-            if (includeProducts)
-            {
-                var productController = new ProductDetailController();
-                var products = ProductDetailController.GetProductsDictionary();
-                var result = customers.Select(c => new
-                {
-                    c.Id,
-                    c.Name,
-                    c.Email,
-                    c.Detail,
-                    Products = c.ProductIds.Select(pid => products.TryGetValue(pid, out var p) ? p : null).Where(p => p != null).ToList()
-                });
-                return Ok(new {
-                    success = true,
-                    message = "Customers with products fetched successfully",
-                    data = result
-                });
-            }
-            return Ok(new {
-                success = true,
-                message = "Customers fetched successfully",
-                data = customers
+            return BadRequest(new ErrorResponse 
+            { 
+                Success = false, 
+                Message = "ID mismatch", 
+                ErrorCode = "VALIDATION_ERROR" 
             });
         }
 
-        [HttpGet("{id}")]
-        public IActionResult Get(int id, [FromQuery] bool includeProducts = false)
+        var response = await Mediator.Send(request);
+        return HandleResponse(response);
+    }
+
+    /// <summary>
+    /// Updates a customer's detail
+    /// </summary>
+    [HttpPut("{id}/detail")]
+    [ProducesResponseType(typeof(Response<CustomerDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateCustomerDetail(int id, [FromBody] UpdateCustomerDetailRequest request)
+    {
+        if (id != request.CustomerId)
         {
-            if (!Customers.TryGetValue(id, out var customer))
-            {
-                return NotFound(new {
-                    type = "https://api.example.com/errors/resource-not-found",
-                    title = "Resource Not Found",
-                    status = 404,
-                    detail = $"Customer with ID {id} not found",
-                    instance = $"/customer/{id}",
-                    errorCode = "CUSTOMER_NOT_FOUND"
-                });
-            }
-            if (includeProducts)
-            {
-                var products = ProductDetailController.GetProductsDictionary();
-                var result = new
-                {
-                    customer.Id,
-                    customer.Name,
-                    customer.Email,
-                    customer.Detail,
-                    Products = customer.ProductIds.Select(pid => products.TryGetValue(pid, out var p) ? p : null).Where(p => p != null).ToList()
-                };
-                return Ok(new {
-                    success = true,
-                    message = "Customer with products fetched successfully",
-                    data = result
-                });
-            }
-            return Ok(new {
-                success = true,
-                message = "Customer fetched successfully",
-                data = customer
-            });
+            request.CustomerId = id;
         }
 
-        [HttpPost]
-        public IActionResult Create([FromBody] Customer customer)
-        {
-            customer.Id = _nextId++;
-            Customers[customer.Id] = customer;
-            return StatusCode(201, new {
-                success = true,
-                message = "Customer created successfully",
-                data = customer
-            });
-        }
+        var response = await Mediator.Send(request);
+        return HandleResponse(response);
+    }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] Customer customer)
-        {
-            if (!Customers.ContainsKey(id))
-            {
-                return NotFound(new {
-                    type = "https://api.example.com/errors/resource-not-found",
-                    title = "Resource Not Found",
-                    status = 404,
-                    detail = $"Customer with ID {id} not found",
-                    instance = $"/customer/{id}",
-                    errorCode = "CUSTOMER_NOT_FOUND"
-                });
-            }
-            customer.Id = id;
-            Customers[id] = customer;
-            return Ok(new {
-                success = true,
-                message = "Customer updated successfully",
-                data = customer
-            });
-        }
+    /// <summary>
+    /// Adds a product to a customer
+    /// </summary>
+    [HttpPost("{id}/products/{productId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AddProductToCustomer(int id, int productId)
+    {
+        var request = new AddProductToCustomerRequest { CustomerId = id, ProductId = productId };
+        await Mediator.Send(request);
+        return NoContent();
+    }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            if (!Customers.TryRemove(id, out _))
-            {
-                return NotFound(new {
-                    type = "https://api.example.com/errors/resource-not-found",
-                    title = "Resource Not Found",
-                    status = 404,
-                    detail = $"Customer with ID {id} not found",
-                    instance = $"/customer/{id}",
-                    errorCode = "CUSTOMER_NOT_FOUND"
-                });
-            }
-            return NoContent();
-        }
+    /// <summary>
+    /// Removes a product from a customer
+    /// </summary>
+    [HttpDelete("{id}/products/{productId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RemoveProductFromCustomer(int id, int productId)
+    {
+        var request = new RemoveProductFromCustomerRequest { CustomerId = id, ProductId = productId };
+        await Mediator.Send(request);
+        return NoContent();
     }
 } 
