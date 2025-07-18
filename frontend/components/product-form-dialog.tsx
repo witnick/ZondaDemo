@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { productSchema, type ProductFormData } from "@/lib/schemas/product"
 import { useCreateProductMutation, useUpdateProductMutation } from "@/feature/api"
 import { ErrorMessage } from "@/components/ui/error-message"
@@ -34,24 +34,25 @@ interface ProductFormDialogProps {
   product?: ProductDetail
 }
 
+const defaultValues: ProductFormData = {
+  name: "",
+  description: "",
+  price: 0,
+  stock: 0,
+}
+
 export function ProductFormDialog({
   open,
   onOpenChange,
   mode,
   product,
 }: ProductFormDialogProps) {
-  const { toast } = useToast()
   const [createProduct] = useCreateProductMutation()
   const [updateProduct] = useUpdateProductMutation()
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: 0,
-      stock: 0,
-    },
+    defaultValues,
   })
 
   // Update form values when editing an existing product
@@ -63,13 +64,16 @@ export function ProductFormDialog({
         price: product.price,
         stock: product.stock,
       })
+    } else {
+      form.reset(defaultValues)
     }
   }, [form, mode, product])
 
   // Handle dialog close
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      form.reset()
+      // Reset form to default values and clear all errors
+      form.reset(defaultValues)
       form.clearErrors()
     }
     onOpenChange(open)
@@ -78,29 +82,28 @@ export function ProductFormDialog({
   async function onSubmit(data: ProductFormData) {
     try {
       if (mode === 'create') {
-        await createProduct(data).unwrap()
-        toast({
-          title: "Success",
-          description: "Product created successfully",
-        })
+        await createProduct(data).unwrap();
+        toast.success("Product created successfully");
       } else if (product?.id) {
-        await updateProduct({ id: product.id, data }).unwrap()
-        toast({
-          title: "Success",
-          description: "Product updated successfully",
-        })
+        await updateProduct({ 
+          id: product.id, 
+          data: {
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            stock: data.stock,
+          }
+        }).unwrap();
+        toast.success("Product updated successfully");
       }
-      handleOpenChange(false)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to ${mode} product. Please try again.`,
-        variant: "destructive",
-      })
+      handleOpenChange(false);
+    } catch (error: any) {
+      console.error('Operation failed:', error);
+      toast.error(error?.data?.message || `Failed to ${mode} product. Please try again.`);
     }
   }
 
-  const title = mode === 'create' ? 'Add New Product' : 'Edit Product'
+  const title = mode === 'create' ? 'Create a new product' : 'Edit Product'
   const description = mode === 'create' 
     ? 'Fill in the product details below. Click save when you\'re done.'
     : 'Update the product details below. Click save when you\'re done.'
@@ -152,25 +155,11 @@ export function ProductFormDialog({
                   <FormControl>
                     <Input
                       type="number"
-                      step="any"
-                      placeholder="Enter price"
+                      step="0.01"
+                      min="0"
+                      placeholder="Enter product price"
                       {...field}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        // Ensure we only allow 2 decimal places
-                        if (value.includes('.') && value.split('.')[1]?.length > 2) {
-                          return;
-                        }
-                        field.onChange(parseFloat(value) || 0);
-                      }}
-                      onBlur={(e) => {
-                        const value = parseFloat(e.target.value);
-                        if (!isNaN(value)) {
-                          // Format to 2 decimal places on blur
-                          e.target.value = value.toFixed(2);
-                          field.onChange(value);
-                        }
-                      }}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
                     />
                   </FormControl>
                   <ErrorMessage content={fieldState.error?.message} />
@@ -187,10 +176,9 @@ export function ProductFormDialog({
                     <Input
                       type="number"
                       min="0"
-                      step="1"
                       placeholder="Enter stock quantity"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
                     />
                   </FormControl>
                   <ErrorMessage content={fieldState.error?.message} />
@@ -198,13 +186,11 @@ export function ProductFormDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">
-                {mode === 'create' ? 'Save Product' : 'Update Product'}
-              </Button>
+              <Button type="submit">Save</Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 } 

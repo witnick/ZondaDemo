@@ -3,6 +3,8 @@ using ZondaDemo.Application.Common.Models;
 using ZondaDemo.Application.Products.GetProductById;
 using ZondaDemo.Application.Products.GetProductList;
 using ZondaDemo.Application.Products.UpdateProduct;
+using ZondaDemo.Application.Products.CreateProduct;
+using ZondaDemo.Application.Products.DeleteProduct;
 
 namespace ZondaDemo.API.Controllers;
 
@@ -34,6 +36,18 @@ public class ProductController : BaseApiController
     }
 
     /// <summary>
+    /// Creates a new product
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(Response<ProductDetailDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand request)
+    {
+        var response = await Mediator.Send(request);
+        return CreatedAtAction(nameof(GetProduct), new { id = response.Data.Id }, response);
+    }
+
+    /// <summary>
     /// Updates a product
     /// </summary>
     [HttpPut("{id}")]
@@ -54,5 +68,18 @@ public class ProductController : BaseApiController
 
         var response = await Mediator.Send(request);
         return HandleResponse(response);
+    }
+
+    /// <summary>
+    /// Deletes a product
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteProduct(int id)
+    {
+        var response = await Mediator.Send(new DeleteProductRequest(id));
+        return response.Success ? NoContent() : HandleResponse(response);
     }
 } 

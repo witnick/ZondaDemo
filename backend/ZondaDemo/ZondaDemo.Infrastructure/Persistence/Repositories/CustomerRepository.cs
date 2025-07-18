@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ZondaDemo.Core.Entities;
 using ZondaDemo.Core.Interfaces;
 using ZondaDemo.Infrastructure.Data;
+using System.Linq;
 
 namespace ZondaDemo.Infrastructure.Persistence.Repositories;
 
@@ -21,27 +22,31 @@ public class CustomerRepository : BaseRepository<Customer>, ICustomerRepository
 
     public async Task AddProductToCustomerAsync(int customerId, int productId)
     {
-        var customer = await GetByIdAsync(customerId);
         var product = await _context.Products.FindAsync(productId);
-
-        if (customer != null && product != null)
+        if (product != null)
         {
-            // This is a simplified approach. In a real application, you might
-            // want to handle the case where the product is already associated
-            // with the customer.
-            customer.Products.Add(product);
+            product.AssignToCustomer(customerId);
+            _context.Products.Update(product);
             await _context.SaveChangesAsync();
         }
     }
 
     public async Task RemoveProductFromCustomerAsync(int customerId, int productId)
     {
-        var customer = await GetByIdAsync(customerId);
         var product = await _context.Products.FindAsync(productId);
-
-        if (customer != null && product != null)
+        if (product != null && product.CustomerId == customerId)
         {
-            customer.Products.Remove(product);
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task UnassignProductFromCustomerAsync(int customerId, int productId)
+    {
+        var product = await _context.Products.FindAsync(productId);
+        if (product != null && product.CustomerId == customerId)
+        {
+            product.UnassignFromCustomer();
             await _context.SaveChangesAsync();
         }
     }

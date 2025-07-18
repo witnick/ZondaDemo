@@ -1,8 +1,6 @@
 "use client";
 
-import { useGetCustomerQuery, useDeleteProductMutation } from "@/feature/api";
-import { useSelector } from "react-redux";
-import { selectSelectedCustomerId } from "@/feature/selectedCustomerSlice";
+import { useGetProductsQuery, useDeleteProductMutation } from "@/feature/api";
 import { DataTable, type Column } from "@/components/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -16,35 +14,40 @@ const columns: Column<ProductDetail>[] = [
   {
     header: "Name",
     accessorKey: "name",
+    sortable: true,
+    searchable: true,
   },
   {
     header: "Description",
     accessorKey: "description",
+    sortable: true,
+    searchable: true,
   },
   {
     header: "Stock",
     accessorKey: "stock",
+    sortable: true,
+    searchable: false,
   },
   {
     header: "Price",
     accessorKey: "price",
     cell: (product) => `$${product.price.toFixed(2)}`,
+    sortable: true,
+    searchable: false,
   },
 ];
 
 function ProductDetails() {
-  const selectedCustomerId = useSelector(selectSelectedCustomerId);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail | undefined>();
 
   const { 
-    data: customer,
-    isLoading: isLoadingCustomer,
-    error: customerError,
-    refetch: refetchCustomer
-  } = useGetCustomerQuery(Number(selectedCustomerId), {
-    skip: !selectedCustomerId
-  });
+    data: products,
+    isLoading,
+    error,
+    refetch,
+  } = useGetProductsQuery();
 
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
@@ -74,44 +77,27 @@ function ProductDetails() {
     }
   };
 
-  if (!selectedCustomerId) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Product Details</h1>
-        <p className="text-muted-foreground">Please select a customer from the dropdown menu to view their products.</p>
-      </div>
-    );
-  }
-
-  if (customerError) {
+  if (error) {
     return (
       <ApiError 
-        error={customerError} 
-        onRetry={refetchCustomer}
+        error={error} 
+        onRetry={refetch}
         className="max-w-2xl"
       />
-    );
-  }
-
-  if (!customer) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Error</h1>
-        <p className="text-red-500">Customer not found.</p>
-      </div>
     );
   }
 
   return (
     <>
       <DataTable
-        data={customer.products}
+        data={products || []}
         columns={columns}
-        title={`Products for ${customer.name}`}
-        isLoading={isLoadingCustomer}
+        title="Products"
+        isLoading={isLoading}
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDeleteProduct}
+        enableSearch={true}
       />
 
       <ProductFormDialog

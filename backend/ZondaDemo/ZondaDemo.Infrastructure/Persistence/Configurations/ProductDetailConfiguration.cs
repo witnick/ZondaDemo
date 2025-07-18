@@ -28,6 +28,6 @@ public class ProductDetailConfiguration : IEntityTypeConfiguration<ProductDetail
         builder.HasOne(p => p.Customer)
             .WithMany(c => c.Products)
             .HasForeignKey(p => p.CustomerId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 } 

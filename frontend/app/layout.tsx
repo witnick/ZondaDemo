@@ -11,6 +11,7 @@ import {
 	SidebarContent,
 	SidebarGroup,
 	SidebarGroupContent,
+	SidebarGroupLabel,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
@@ -27,15 +28,19 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Provider } from 'react-redux';
 import { store } from '@/feature/store';
 import { useGetCustomersQuery } from '@/feature/api';
-import type { Customer } from '@/feature/api';
+import type { Customer } from '@/lib/api/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedCustomer, selectSelectedCustomerId } from '@/feature/selectedCustomerSlice';
 import { Toaster } from "sonner";
 
-const menuItems = [
-	{ title: "Customer Info", icon: Info, href: "/" },
+const managementMenuItems = [
 	{ title: "Customers", icon: Users, href: "/customers" },
 	{ title: "Product Details", icon: Package, href: "/product-details" },
+];
+
+const userManagementMenuItems = [
+	{ title: "Customer Info", icon: Info, href: "/customer-info" },
+	{ title: "Customer's Products", icon: Package, href: "/customer-products" },
 ];
 
 const AppContent = ({ children }: { children: ReactNode }) => {
@@ -68,30 +73,17 @@ const AppContent = ({ children }: { children: ReactNode }) => {
 	return (
 		<>
 			<Sidebar className="w-64 border-r" collapsible="icon">
-			<SidebarContent>
-				<div className="p-6 border-b h-[60px] flex items-center justify-center">
-					<Select
-							value={selectedCustomer || undefined}
-							onValueChange={handleCustomerChange}
-							disabled={isLoading}>
-						<SelectTrigger className="w-full">
-								<SelectValue placeholder={isLoading ? "Loading..." : "Select a customer"} />
-						</SelectTrigger>
-						<SelectContent>
-								{customers?.map((customer: Customer) => (
-								<SelectItem
-									key={customer.id}
-										value={customer.id.toString()}>
-									{customer.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-								{menuItems.map((item) => (
+				<SidebarContent>
+					<div className="p-6 border-b h-[60px] flex items-center justify-center">
+						<span className="text-lg font-semibold">App Demo</span>
+					</div>
+					
+					{/* Management Group */}
+					<SidebarGroup>
+						<SidebarGroupLabel>Management</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{managementMenuItems.map((item) => (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton asChild isActive={pathname === item.href}>
 											<Link
@@ -104,11 +96,52 @@ const AppContent = ({ children }: { children: ReactNode }) => {
 										</SidebarMenuButton>
 									</SidebarMenuItem>
 								))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-			</SidebarContent>
-		</Sidebar>
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					{/* User Management Group */}
+					<SidebarGroup>
+						<SidebarGroupLabel>User Management</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<div className="px-2 py-2">
+								<Select
+									value={selectedCustomer || undefined}
+									onValueChange={handleCustomerChange}
+									disabled={isLoading}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder={isLoading ? "Loading..." : "Select a customer"} />
+									</SelectTrigger>
+									<SelectContent className="custom-scrollbar">
+										{customers?.map((customer: Customer) => (
+											<SelectItem
+												key={customer.id}
+												value={customer.id.toString()}>
+												{customer.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<SidebarMenu>
+								{userManagementMenuItems.map((item) => (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton asChild isActive={pathname === item.href}>
+											<Link
+												href={item.href}
+												className="flex items-center gap-2 px-4 py-2"
+												scroll={false}>
+												{item.icon && <item.icon className="h-4 w-4" />}
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				</SidebarContent>
+			</Sidebar>
 			<div className="flex min-h-screen w-full">
 				<div className="flex flex-col flex-1">
 					<header className="flex flex-row w-full items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 justify-between h-[60px]">
@@ -134,16 +167,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 		<html lang="en" suppressHydrationWarning>
 			<body suppressHydrationWarning>
 				<Provider store={store}>
-				<ThemeProvider
-					attribute="class"
+					<ThemeProvider
+						attribute="class"
 						defaultTheme="system"
 						enableSystem
-					disableTransitionOnChange>
-					<SidebarProvider>
+						disableTransitionOnChange>
+						<SidebarProvider>
 							<AppContent>{children}</AppContent>
 							<Toaster />
-					</SidebarProvider>
-				</ThemeProvider>
+						</SidebarProvider>
+					</ThemeProvider>
 				</Provider>
 			</body>
 		</html>

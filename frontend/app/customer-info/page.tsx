@@ -17,15 +17,8 @@ export default function CustomerInfo() {
     skip: !selectedCustomerId
   });
 
-  const {
-    data: products,
-    isLoading: isLoadingProducts
-  } = useGetProductsQuery(undefined, {
-    skip: !customer?.productIds?.length
-  });
-
   // Show loading skeleton while data is loading
-  if (isLoadingCustomer || (customer?.productIds?.length && isLoadingProducts)) {
+  if (isLoadingCustomer) {
     return <LoadingSkeleton />;
   }
 
@@ -47,14 +40,10 @@ export default function CustomerInfo() {
     );
   }
 
-  const customerProducts = products?.filter(product => 
-    customer.productIds.includes(product.id)
-  ) || [];
-
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Customer Information</h1>
-      
+
       {/* Basic Info */}
       <Card>
         <CardHeader>
@@ -95,44 +84,6 @@ export default function CustomerInfo() {
               <p className="font-medium text-muted-foreground">Notes</p>
               <p>{customer.detail.notes}</p>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Associated Products */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Associated Products</CardTitle>
-          <CardDescription>Products purchased by this customer</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoadingProducts ? (
-            <div className="space-y-4">
-              {[1, 2].map(i => (
-                <Skeleton key={i} className="h-16 w-full" />
-              ))}
-            </div>
-          ) : customerProducts.length > 0 ? (
-            <div className="grid gap-4">
-              {customerProducts.map(product => (
-                <div key={product.id} className="grid grid-cols-3 gap-4 p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium text-muted-foreground">Name</p>
-                    <p>{product.name}</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-muted-foreground">Description</p>
-                    <p>{product.description}</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-muted-foreground">Price</p>
-                    <p>${product.price.toFixed(2)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No products associated with this customer.</p>
           )}
         </CardContent>
       </Card>

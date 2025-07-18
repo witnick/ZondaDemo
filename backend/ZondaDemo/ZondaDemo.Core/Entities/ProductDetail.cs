@@ -8,12 +8,12 @@ public class ProductDetail : BaseEntity
     public string Description { get; private set; } = string.Empty;
     public decimal Price { get; private set; }
     public int Stock { get; private set; }
-    public int CustomerId { get; private set; }
-    public Customer Customer { get; private set; } = null!;
+    public int? CustomerId { get; private set; }
+    public Customer? Customer { get; private set; }
 
     private ProductDetail() { }
 
-    public ProductDetail(string name, string description, decimal price, int stock, int customerId)
+    public ProductDetail(string name, string description, decimal price, int stock, int? customerId)
     {
         Update(name, description, price, stock);
         CustomerId = customerId;
@@ -33,6 +33,18 @@ public class ProductDetail : BaseEntity
         Description = description?.Trim() ?? string.Empty;
         Price = price;
         Stock = stock;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void AssignToCustomer(int customerId)
+    {
+        CustomerId = customerId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UnassignFromCustomer()
+    {
+        CustomerId = null;
         UpdatedAt = DateTime.UtcNow;
     }
 } 

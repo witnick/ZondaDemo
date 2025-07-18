@@ -1,8 +1,18 @@
-// Standard API Response format
+// API Response types
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+}
+
+export interface PagedDataResult<T> {
+  items: T[];
+  totalCount: number;
+  pageSize: number;
+  currentPage: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 // Standard API Error format (RFC 9457)
