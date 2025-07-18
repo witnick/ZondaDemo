@@ -31,7 +31,6 @@ export interface ApiError {
 export interface CustomerDetail {
   id: number;
   address: string;
-  phone: string;
   notes?: string;
 }
 
@@ -39,6 +38,7 @@ export interface Customer {
   id: number;
   name: string;
   email: string;
+  phone: string;
   detail: CustomerDetail;
   products: ProductDetail[];
 }

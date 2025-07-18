@@ -257,7 +257,7 @@ export function DataTable<T extends { id: number }>({
                           </TableCell>
                         ))}
                         {showActions && (onEdit || onDelete) && (
-                          <TableCell className="sticky right-0 bg-white">
+                          <TableCell className="sticky right-0">
                             <div className="flex items-center gap-2">
                               {onEdit && (
                                 <Button
@@ -272,6 +272,7 @@ export function DataTable<T extends { id: number }>({
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  className="hover:bg-accent hover:text-destructive"
                                   onClick={() => onDelete(item)}
                                 >
                                   <Trash2 className="h-4 w-4" />

@@ -29,7 +29,7 @@ public class UpdateCustomerValidation : AbstractValidator<UpdateCustomerRequest>
             .WithMessage("Phone is required")
             .MaximumLength(20)
             .WithMessage("Phone cannot exceed 20 characters")
-            .Matches(@"^\+?[\d\s-]+$")
+            .Matches(@"^\+?[\d\s\(\)-]+$")
             .WithMessage("Invalid phone number format");
     }
 } 

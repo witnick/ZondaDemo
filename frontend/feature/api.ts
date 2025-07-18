@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_CONFIG } from '@/lib/config';
-import type { ApiResponse, Customer, ProductDetail, PagedDataResult } from '@/lib/api/types';
+import type { ApiResponse, Customer, ProductDetail, PagedDataResult, CustomerDetail } from '@/lib/api/types';
 
 interface PaginationParams {
   page?: number;
@@ -121,6 +121,34 @@ export const api = createApi({
         { type: 'ProductDetail', id: 'LIST' }
       ],
     }),
+
+    updateCustomer: builder.mutation<Customer, { id: number; data: Partial<Customer> }>({
+      query: ({ id, data }) => ({
+        url: `/api/Customer/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      transformResponse: (response: ApiResponse<Customer>) => response.data,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Customer', id },
+        { type: 'Customer', id: 'LIST' },
+        { type: 'CustomerProducts', id }
+      ],
+    }),
+
+    updateCustomerDetail: builder.mutation<CustomerDetail, { id: number; data: Partial<CustomerDetail> }>({
+      query: ({ id, data }) => ({
+        url: `/api/Customer/${id}/detail`,
+        method: 'PUT',
+        body: data,
+      }),
+      transformResponse: (response: ApiResponse<CustomerDetail>) => response.data,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Customer', id },
+        { type: 'Customer', id: 'LIST' },
+        { type: 'CustomerProducts', id }
+      ],
+    }),
   }),
 });
 
@@ -133,4 +161,6 @@ export const {
   useDeleteProductMutation,
   useAddProductToCustomerMutation,
   useRemoveProductFromCustomerMutation,
+  useUpdateCustomerMutation,
+  useUpdateCustomerDetailMutation,
 } = api; 
