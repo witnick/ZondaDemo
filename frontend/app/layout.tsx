@@ -2,10 +2,12 @@
 
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
-import { ReactNode, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { ReactNode } from "react";
+import dynamic from 'next/dynamic';
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Sidebar,
 	SidebarContent,
@@ -17,21 +19,18 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Info, Package, Users } from "lucide-react";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Provider } from 'react-redux';
 import { store } from '@/feature/store';
-import { useGetCustomersQuery } from '@/feature/api';
-import type { Customer } from '@/lib/api/types';
-import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedCustomer, selectSelectedCustomerId } from '@/feature/selectedCustomerSlice';
 import { Toaster } from "sonner";
+
+const CustomerSelector = dynamic(() => 
+	import('@/components/customer-selector').then(mod => mod.CustomerSelector), 
+	{ 
+		ssr: false,
+		loading: () => <Skeleton className="h-10 w-full" />
+	}
+);
 
 const managementMenuItems = [
 	{ title: "Customers", icon: Users, href: "/customers" },
@@ -45,30 +44,6 @@ const userManagementMenuItems = [
 
 const AppContent = ({ children }: { children: ReactNode }) => {
 	const pathname = usePathname();
-	const router = useRouter();
-	const dispatch = useDispatch();
-	const selectedCustomer = useSelector(selectSelectedCustomerId);
-	const { data: customers, isLoading } = useGetCustomersQuery();
-
-	// Auto-select first customer when data is loaded
-	useEffect(() => {
-		if (customers?.length && !selectedCustomer) {
-			const firstCustomerId = customers[0].id.toString();
-			dispatch(setSelectedCustomer(firstCustomerId));
-			
-			// If on customer info page, update the URL
-			if (pathname === '/customer-info') {
-				router.push(`/customer-info?customerId=${firstCustomerId}`, { scroll: false });
-			}
-		}
-	}, [customers, selectedCustomer, dispatch, pathname, router]);
-
-	const handleCustomerChange = (customerId: string) => {
-		dispatch(setSelectedCustomer(customerId));
-		if (pathname === '/customer-info') {
-			router.push(`/customer-info?customerId=${customerId}`, { scroll: false });
-		}
-	};
 
 	return (
 		<>
@@ -105,23 +80,7 @@ const AppContent = ({ children }: { children: ReactNode }) => {
 						<SidebarGroupLabel>User Management</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<div className="px-2 py-2">
-								<Select
-									value={selectedCustomer || undefined}
-									onValueChange={handleCustomerChange}
-									disabled={isLoading}>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder={isLoading ? "Loading..." : "Select a customer"} />
-									</SelectTrigger>
-									<SelectContent className="custom-scrollbar">
-										{customers?.map((customer: Customer) => (
-											<SelectItem
-												key={customer.id}
-												value={customer.id.toString()}>
-												{customer.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<CustomerSelector />
 							</div>
 							<SidebarMenu>
 								{userManagementMenuItems.map((item) => (

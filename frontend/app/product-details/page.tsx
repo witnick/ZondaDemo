@@ -16,18 +16,21 @@ const columns: Column<ProductDetail>[] = [
     accessorKey: "name",
     sortable: true,
     searchable: true,
+    className: "w-[300px]",
   },
   {
     header: "Description",
     accessorKey: "description",
     sortable: true,
     searchable: true,
+    className: "min-w-[400px]",
   },
   {
     header: "Stock",
     accessorKey: "stock",
     sortable: true,
     searchable: false,
+    className: "w-[100px] text-right",
   },
   {
     header: "Price",
@@ -35,6 +38,7 @@ const columns: Column<ProductDetail>[] = [
     cell: (product) => `$${product.price.toFixed(2)}`,
     sortable: true,
     searchable: false,
+    className: "w-[100px] text-right",
   },
 ];
 

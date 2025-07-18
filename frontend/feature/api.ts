@@ -7,10 +7,27 @@ interface PaginationParams {
   pageSize?: number;
 }
 
+// Cache lifetime in seconds (1 hour)
+const CACHE_LIFETIME = 60 * 60;
+
+// Helper function to create list and individual tags
+const providesList = <R extends { id: number | string }, T extends string>(
+  resultsWithIds: R[] | undefined,
+  tagType: T
+) => {
+  return resultsWithIds
+    ? [
+        ...resultsWithIds.map(({ id }) => ({ type: tagType, id } as const)),
+        { type: tagType, id: 'LIST' } as const,
+      ]
+    : [{ type: tagType, id: 'LIST' } as const];
+};
+
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ baseUrl: API_CONFIG.baseUrl }),
   tagTypes: ['Customer', 'ProductDetail', 'CustomerProducts'],
+  keepUnusedDataFor: CACHE_LIFETIME,
   endpoints: (builder) => ({
     // Customer endpoints
     getCustomers: builder.query<PagedDataResult<Customer>, PaginationParams>({
@@ -22,12 +39,12 @@ export const api = createApi({
         },
       }),
       transformResponse: (response: ApiResponse<PagedDataResult<Customer>>) => response.data,
-      providesTags: ['Customer'],
+      providesTags: (result) => providesList(result?.items, 'Customer'),
     }),
     getCustomer: builder.query<Customer, number>({
       query: (id) => `/api/Customer/${id}`,
       transformResponse: (response: ApiResponse<Customer>) => response.data,
-      providesTags: (_result, _error, id) => [
+      providesTags: (result, error, id) => [
         { type: 'Customer', id },
         { type: 'CustomerProducts', id }
       ],
@@ -37,13 +54,7 @@ export const api = createApi({
     getProducts: builder.query<ProductDetail[], void>({
       query: () => '/api/Product',
       transformResponse: (response: ApiResponse<ProductDetail[]>) => response.data,
-      providesTags: (result) => 
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'ProductDetail' as const, id })),
-              { type: 'ProductDetail', id: 'LIST' },
-            ]
-          : [{ type: 'ProductDetail', id: 'LIST' }],
+      providesTags: (result) => providesList(result, 'ProductDetail'),
     }),
     createProduct: builder.mutation<ProductDetail, Partial<ProductDetail>>({
       query: (body) => ({
@@ -52,7 +63,10 @@ export const api = createApi({
         body,
       }),
       transformResponse: (response: ApiResponse<ProductDetail>) => response.data,
-      invalidatesTags: [{ type: 'ProductDetail', id: 'LIST' }],
+      invalidatesTags: [
+        { type: 'ProductDetail', id: 'LIST' },
+        { type: 'Customer', id: 'LIST' }
+      ],
     }),
     updateProduct: builder.mutation<ProductDetail, { id: number; data: Partial<ProductDetail> }>({
       query: ({ id, data }) => ({
@@ -67,6 +81,7 @@ export const api = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'ProductDetail', id },
         { type: 'ProductDetail', id: 'LIST' },
+        { type: 'Customer', id: 'LIST' }
       ],
     }),
     deleteProduct: builder.mutation<void, number>({
@@ -77,6 +92,7 @@ export const api = createApi({
       invalidatesTags: (_result, _error, id) => [
         { type: 'ProductDetail', id },
         { type: 'ProductDetail', id: 'LIST' },
+        { type: 'Customer', id: 'LIST' }
       ],
     }),
 
@@ -88,7 +104,9 @@ export const api = createApi({
       }),
       invalidatesTags: (_result, _error, { customerId }) => [
         { type: 'Customer', id: customerId },
-        { type: 'CustomerProducts', id: customerId }
+        { type: 'Customer', id: 'LIST' },
+        { type: 'CustomerProducts', id: customerId },
+        { type: 'ProductDetail', id: 'LIST' }
       ],
     }),
     removeProductFromCustomer: builder.mutation<void, { customerId: number; productId: number }>({
@@ -98,7 +116,9 @@ export const api = createApi({
       }),
       invalidatesTags: (_result, _error, { customerId }) => [
         { type: 'Customer', id: customerId },
-        { type: 'CustomerProducts', id: customerId }
+        { type: 'Customer', id: 'LIST' },
+        { type: 'CustomerProducts', id: customerId },
+        { type: 'ProductDetail', id: 'LIST' }
       ],
     }),
   }),

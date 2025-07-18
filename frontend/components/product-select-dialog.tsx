@@ -8,16 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { useGetProductsQuery } from "@/feature/api"
-import type { ProductDetail } from "@/lib/api/types"
+import { useGetProductsQuery } from '@/feature/api'
+import type { ProductDetail } from '@/lib/api/types'
+import { SearchableSelect, type SelectOption } from "@/components/ui/searchable-select"
 
 interface ProductSelectDialogProps {
   open: boolean
@@ -38,6 +32,12 @@ export function ProductSelectDialog({
   const availableProducts = products?.filter(
     product => !excludeProductIds.includes(product.id)
   ) || []
+
+  // Convert products to select options
+  const productOptions: SelectOption[] = availableProducts.map(product => ({
+    value: product.id.toString(),
+    label: `${product.name} - $${product.price.toFixed(2)}`
+  }))
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -63,23 +63,14 @@ export function ProductSelectDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <Select
+          <SearchableSelect
+            options={productOptions}
             value={selectedProductId}
             onValueChange={setSelectedProductId}
-            disabled={isLoading}>
-            <SelectTrigger>
-              <SelectValue placeholder={isLoading ? "Loading..." : "Select a product"} />
-            </SelectTrigger>
-            <SelectContent className="custom-scrollbar">
-              {availableProducts.map((product) => (
-                <SelectItem
-                  key={product.id}
-                  value={product.id.toString()}>
-                  {product.name} - ${product.price.toFixed(2)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Select a product"
+            disabled={isLoading}
+            loading={isLoading}
+          />
           <div className="flex justify-end">
             <Button
               onClick={handleSubmit}

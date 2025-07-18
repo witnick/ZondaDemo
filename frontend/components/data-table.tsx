@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Plus, 
   Trash2, 
@@ -31,13 +32,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { PagedDataResult } from "@/lib/api/types";
+import { cn } from "@/lib/utils";
 
 export interface Column<T> {
   header: string;
-  accessorKey: keyof T;
+  accessorKey: keyof T & string;
   cell?: (item: T) => React.ReactNode;
   sortable?: boolean;
   searchable?: boolean;
+  className?: string;
 }
 
 interface DataTableProps<T> {
@@ -164,13 +167,14 @@ export function DataTable<T extends { id: number }>({
     if (!column.sortable) return;
 
     setSortState(current => {
-      if (current.column === column.accessorKey) {
+      const columnKey = column.accessorKey;
+      if (current.column === columnKey) {
         // Cycle through: asc -> desc -> null
-        if (current.direction === 'asc') return { column: column.accessorKey, direction: 'desc' };
+        if (current.direction === 'asc') return { column: columnKey, direction: 'desc' };
         if (current.direction === 'desc') return { column: null, direction: null };
-        return { column: column.accessorKey, direction: 'asc' };
+        return { column: columnKey, direction: 'asc' };
       }
-      return { column: column.accessorKey, direction: 'asc' };
+      return { column: columnKey, direction: 'asc' };
     });
   };
 
@@ -204,70 +208,85 @@ export function DataTable<T extends { id: number }>({
 
       {items.length > 0 ? (
         <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableHead 
-                    key={String(column.accessorKey)}
-                    className={column.sortable ? 'cursor-pointer select-none' : ''}
-                    onClick={() => column.sortable && handleSort(column)}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span>{column.header}</span>
-                      {column.sortable && (
-                        <ArrowUpDown className={`h-4 w-4 ${
-                          sortState.column === column.accessorKey
-                            ? 'text-foreground'
-                            : 'text-muted-foreground'
-                        }`} />
+          <div className="relative w-full">
+            <ScrollArea className="h-[400px] rounded-md border">
+              <div className="relative w-full">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 w-full">
+                    <TableRow>
+                      {columns.map((column) => (
+                        <TableHead 
+                          key={String(column.accessorKey)}
+                          className={cn(
+                            "bg-gray-50",
+                            column.sortable && "cursor-pointer select-none",
+                            column.className
+                          )}
+                          onClick={() => column.sortable && handleSort(column)}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <span>{column.header}</span>
+                            {column.sortable && (
+                              <ArrowUpDown className={`h-4 w-4 ${
+                                sortState.column === column.accessorKey
+                                  ? 'text-foreground'
+                                  : 'text-muted-foreground'
+                              }`} />
+                            )}
+                          </div>
+                        </TableHead>
+                      ))}
+                      {showActions && (onEdit || onDelete) && (
+                        <TableHead className="sticky right-0 w-[100px] bg-gray-50">
+                          Actions
+                        </TableHead>
                       )}
-                    </div>
-                  </TableHead>
-                ))}
-                {showActions && (onEdit || onDelete) && (
-                  <TableHead className="w-[150px]">Actions</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  {columns.map((column) => (
-                    <TableCell key={String(column.accessorKey)}>
-                      {column.cell
-                        ? column.cell(item)
-                        : String(item[column.accessorKey])}
-                    </TableCell>
-                  ))}
-                  {showActions && (onEdit || onDelete) && (
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {onEdit && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onEdit(item)}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((item) => (
+                      <TableRow key={item.id}>
+                        {columns.map((column) => (
+                          <TableCell 
+                            key={String(column.accessorKey)}
+                            className={column.className}
                           >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                            {column.cell
+                              ? column.cell(item)
+                              : String(item[column.accessorKey])}
+                          </TableCell>
+                        ))}
+                        {showActions && (onEdit || onDelete) && (
+                          <TableCell className="sticky right-0 bg-white">
+                            <div className="flex items-center gap-2">
+                              {onEdit && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => onEdit(item)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {onDelete && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => onDelete(item)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
                         )}
-                        {onDelete && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onDelete(item)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
+          </div>
           
           <div className="flex items-center justify-between px-4 py-2 border-t">
             <div className="flex items-center gap-2">
