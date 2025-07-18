@@ -30,7 +30,7 @@ public class UpdateProductHandler : IRequestHandler<UpdateProductRequest, Respon
         try
         {
             // Update product using domain entity methods which include validation
-            product.Update(request.Name, request.Price);
+            product.Update(request.Name, request.Description, request.Price, request.Stock);
 
             await _productRepository.UpdateAsync(product);
 

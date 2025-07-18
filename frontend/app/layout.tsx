@@ -67,29 +67,29 @@ const AppContent = ({ children }: { children: ReactNode }) => {
 	return (
 		<>
 			<Sidebar className="w-64 border-r" collapsible="icon">
-				<SidebarContent>
-					<div className="p-6 border-b h-[60px] flex items-center justify-center">
-						<Select
+			<SidebarContent>
+				<div className="p-6 border-b h-[60px] flex items-center justify-center">
+					<Select
 							value={selectedCustomer || undefined}
 							onValueChange={handleCustomerChange}
 							disabled={isLoading}>
-							<SelectTrigger className="w-full">
+						<SelectTrigger className="w-full">
 								<SelectValue placeholder={isLoading ? "Loading..." : "Select a customer"} />
-							</SelectTrigger>
-							<SelectContent>
+						</SelectTrigger>
+						<SelectContent>
 								{customers?.map((customer: Customer) => (
-									<SelectItem
-										key={customer.id}
+								<SelectItem
+									key={customer.id}
 										value={customer.id.toString()}>
-										{customer.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<SidebarGroup>
-						<SidebarGroupContent>
-							<SidebarMenu>
+									{customer.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+				<SidebarGroup>
+					<SidebarGroupContent>
+						<SidebarMenu>
 								{menuItems.map((item) => (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton asChild isActive={pathname === item.href}>
@@ -103,11 +103,11 @@ const AppContent = ({ children }: { children: ReactNode }) => {
 										</SidebarMenuButton>
 									</SidebarMenuItem>
 								))}
-							</SidebarMenu>
-						</SidebarGroupContent>
-					</SidebarGroup>
-				</SidebarContent>
-			</Sidebar>
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+			</SidebarContent>
+		</Sidebar>
 			<div className="flex min-h-screen w-full">
 				<div className="flex flex-col flex-1">
 					<header className="flex flex-row w-full items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 justify-between h-[60px]">
@@ -133,16 +133,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 		<html lang="en" suppressHydrationWarning>
 			<body suppressHydrationWarning>
 				<Provider store={store}>
-					<ThemeProvider
-						attribute="class"
+				<ThemeProvider
+					attribute="class"
 						defaultTheme="system"
 						enableSystem
-						disableTransitionOnChange>
-						<SidebarProvider>
+					disableTransitionOnChange>
+					<SidebarProvider>
 							<AppContent>{children}</AppContent>
 							<Toaster />
-						</SidebarProvider>
-					</ThemeProvider>
+					</SidebarProvider>
+				</ThemeProvider>
 				</Provider>
 			</body>
 		</html>

@@ -35,12 +35,12 @@ function ProductDetails() {
     skip: !selectedCustomerId
   });
 
-  const {
-    data: products,
-    isLoading: isLoadingProducts,
-    error: productsError,
-    refetch: refetchProducts
-  } = useGetProductsQuery();
+  // const {
+  //   data: products,
+  //   isLoading: isLoadingProducts,
+  //   error: productsError,
+  //   refetch: refetchProducts
+  // } = useGetProductsQuery();
 
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
@@ -70,8 +70,8 @@ function ProductDetails() {
     }
   };
 
-  // Show loading skeleton while either customer or products are loading
-  if (isLoadingCustomer || isLoadingProducts) {
+  // Show loading skeleton while either customers are loading
+  if (isLoadingCustomer ) {
     return <LoadingSkeleton />;
   }
 
@@ -104,19 +104,7 @@ function ProductDetails() {
     );
   }
 
-  if (productsError) {
-    return (
-      <ApiError 
-        error={productsError} 
-        onRetry={refetchProducts}
-        className="max-w-2xl"
-      />
-    );
-  }
-
-  const customerProducts = products?.filter(product => 
-    customer.productIds.includes(product.id)
-  ) || [];
+  const customerProducts = customer.products;
 
   return (
     <div className="space-y-4">
@@ -217,4 +205,4 @@ function LoadingSkeleton() {
       </div>
     </div>
   );
-} 
+}

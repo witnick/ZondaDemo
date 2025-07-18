@@ -33,7 +33,9 @@ public class ProductDetailFaker : Faker<ProductDetail>
     {
         CustomInstantiator(f => new ProductDetail(
             name: f.Commerce.ProductName(),
+            description: f.Commerce.ProductDescription(),
             price: decimal.Parse(f.Commerce.Price(10, 1000)),
+            stock: f.Random.Int(0, 1000),
             customerId: customerId
         ));
     }

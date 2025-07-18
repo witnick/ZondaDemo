@@ -16,8 +16,16 @@ public class UpdateProductValidation : AbstractValidator<UpdateProductRequest>
             .MaximumLength(100)
             .WithMessage("Name cannot exceed 100 characters");
 
+        RuleFor(x => x.Description)
+            .MaximumLength(500)
+            .WithMessage("Description cannot exceed 500 characters");
+
         RuleFor(x => x.Price)
             .GreaterThanOrEqualTo(0)
             .WithMessage("Price cannot be negative");
+
+        RuleFor(x => x.Stock)
+            .GreaterThanOrEqualTo(0)
+            .WithMessage("Stock cannot be negative");
     }
 } 

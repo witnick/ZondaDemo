@@ -9,25 +9,25 @@ export const api = createApi({
   endpoints: (builder) => ({
     // Customer endpoints
     getCustomers: builder.query<Customer[], void>({
-      query: () => '/Customer',
+      query: () => '/api/Customer',
       transformResponse: (response: ApiResponse<Customer[]>) => response.data,
       providesTags: ['Customer'],
     }),
     getCustomer: builder.query<Customer, number>({
-      query: (id) => `/Customer/${id}`,
+      query: (id) => `/api/Customer/${id}`,
       transformResponse: (response: ApiResponse<Customer>) => response.data,
       providesTags: (_result, _error, id) => [{ type: 'Customer', id }],
     }),
 
     // Product endpoints
     getProducts: builder.query<ProductDetail[], void>({
-      query: () => '/ProductDetail',
+      query: () => '/api/Product',
       transformResponse: (response: ApiResponse<ProductDetail[]>) => response.data,
       providesTags: ['ProductDetail'],
     }),
     createProduct: builder.mutation<ProductDetail, Partial<ProductDetail>>({
       query: (body) => ({
-        url: '/ProductDetail',
+        url: '/api/Product',
         method: 'POST',
         body,
       }),
@@ -36,7 +36,7 @@ export const api = createApi({
     }),
     updateProduct: builder.mutation<ProductDetail, { id: number; data: Partial<ProductDetail> }>({
       query: ({ id, data }) => ({
-        url: `/ProductDetail/${id}`,
+        url: `/api/Product/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -45,7 +45,7 @@ export const api = createApi({
     }),
     deleteProduct: builder.mutation<void, number>({
       query: (id) => ({
-        url: `/ProductDetail/${id}`,
+        url: `/api/Product/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['ProductDetail'],

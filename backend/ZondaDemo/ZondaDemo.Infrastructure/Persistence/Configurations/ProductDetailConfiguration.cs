@@ -14,9 +14,16 @@ public class ProductDetailConfiguration : IEntityTypeConfiguration<ProductDetail
             .IsRequired()
             .HasMaxLength(100);
 
+        builder.Property(p => p.Description)
+            .HasMaxLength(500);
+
         builder.Property(p => p.Price)
             .IsRequired()
             .HasPrecision(18, 2);
+
+        builder.Property(p => p.Stock)
+            .IsRequired()
+            .HasDefaultValue(0);
 
         builder.HasOne(p => p.Customer)
             .WithMany(c => c.Products)

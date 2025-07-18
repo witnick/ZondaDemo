@@ -30,7 +30,7 @@ export interface Customer {
   name: string;
   email: string;
   detail: CustomerDetail;
-  productIds: number[];
+  products: ProductDetail[];
 }
 
 // Product types
