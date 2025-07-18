@@ -15,7 +15,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Info, Package } from "lucide-react";
+import { Info, Package, Users } from "lucide-react";
 import {
 	Select,
 	SelectContent,
@@ -34,6 +34,7 @@ import { Toaster } from "sonner";
 
 const menuItems = [
 	{ title: "Customer Info", icon: Info, href: "/" },
+	{ title: "Customers", icon: Users, href: "/customers" },
 	{ title: "Product Details", icon: Package, href: "/product-details" },
 ];
 
